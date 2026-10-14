@@ -7,7 +7,8 @@ import ScanningOverlay from './components/ScanningOverlay';
 import ResultsDashboard from './components/ResultsDashboard';
 import HistoryView from './components/HistoryView';
 import TreatmentLibrary from './components/TreatmentLibrary';
-import AnalyticsView from './components/AnalyticsView';
+import ReportsView from './components/ReportsView';
+import SubscriptionView from './components/SubscriptionView';
 import PhotoGuideModal from './components/PhotoGuideModal';
 import PlantDoctorModal from './components/PlantDoctorModal';
 import EcoStatsBanner from './components/EcoStatsBanner';
@@ -17,8 +18,12 @@ import { Sparkles, Leaf, Camera, ShieldCheck, ArrowRight, Zap, RefreshCw } from 
 
 export default function App() {
   // Navigation State (Line-by-line options on left sidebar)
-  const [activeTab, setActiveTab] = useState('scanner'); // 'scanner', 'history', 'camera', 'treatments', 'doctor', 'analytics', 'guide'
+  // 1: 'scanner', 2: 'camera', 3: 'treatments', 4: 'doctor', 5: 'reports', 6: 'subscription', 7: 'guide', 8: 'history'
+  const [activeTab, setActiveTab] = useState('scanner');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Subscription state
+  const [isProUser, setIsProUser] = useState(false);
 
   // Scan & Diagnostic State
   const [selectedFile, setSelectedFile] = useState(null);
@@ -36,10 +41,10 @@ export default function App() {
   const [isDoctorOpen, setIsDoctorOpen] = useState(false);
   const [doctorDiseaseContext, setDoctorDiseaseContext] = useState(SAMPLE_DIAGNOSES[0]);
 
-  // Scan History Journal
+  // Scan History & Reports Journal
   const [scanHistory, setScanHistory] = useState([
     {
-      id: 'session-hist-1',
+      id: 'FS-2026-9041',
       plantName: 'Tomato',
       botanicalName: 'Solanum lycopersicum',
       diseaseName: 'Late Blight',
@@ -50,14 +55,14 @@ export default function App() {
       ...SAMPLE_DIAGNOSES[0]
     },
     {
-      id: 'session-hist-2',
+      id: 'FS-2026-8812',
       plantName: 'Monstera Deliciosa',
       botanicalName: 'Monstera deliciosa',
       diseaseName: 'None (Healthy Specimen)',
       severity: 'Healthy',
       confidence: 99.2,
       image: '/samples/healthy_monstera.jpg',
-      timestamp: '32 mins ago',
+      timestamp: '35 mins ago',
       ...SAMPLE_DIAGNOSES[3]
     }
   ]);
@@ -117,10 +122,13 @@ export default function App() {
       result.image = previewUrl;
     }
 
+    // Set unique report ID
+    result.id = `FS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
     setDiagnosis(result);
     setDoctorDiseaseContext(result);
 
-    // Add to session scan history
+    // Add to session scan history & reports
     const historyItem = {
       ...result,
       timestamp: 'Just now',
@@ -144,7 +152,7 @@ export default function App() {
     setActiveTab('scanner');
   };
 
-  // Recall item from history
+  // Recall item from history / reports
   const handleSelectHistoryItem = (item) => {
     setDiagnosis(item);
     setPreviewUrl(item.image);
@@ -163,28 +171,31 @@ export default function App() {
   // Get human readable tab title for TopBar
   const getTabTitle = () => {
     switch (activeTab) {
-      case 'history':
-        return 'Scan History & Diagnostics Journal';
+      case 'scanner':
+        return diagnosis ? 'Diagnostic Results & Treatment Protocol' : 'AI Leaf Disease Scanner';
       case 'camera':
         return 'Live Camera Scanner';
       case 'treatments':
         return 'Treatment & Agronomy Library';
       case 'doctor':
-        return 'AI Plant Doctor Consultation';
-      case 'analytics':
-        return 'Crop Health & Pathology Analytics';
+        return 'AI Plant Doctor Consultation (Voice AI)';
+      case 'reports':
+        return 'Download & Print Leaf Diagnostic Reports';
+      case 'subscription':
+        return 'Subscription & Agronomy Plans';
       case 'guide':
         return 'Leaf Photography Guidelines';
-      case 'scanner':
+      case 'history':
+        return 'Scan History & Past Diagnostics';
       default:
-        return diagnosis ? 'Diagnostic Results & Treatment Protocol' : 'AI Leaf Disease Scanner';
+        return 'AI Leaf Disease Scanner';
     }
   };
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/40 text-slate-800 antialiased">
       
-      {/* 1. Left Sidebar Navigation (Line-by-line options with History) */}
+      {/* 1. Left Sidebar Navigation (Ordered strictly as requested) */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={(tab) => {
@@ -197,6 +208,8 @@ export default function App() {
           }
         }}
         historyCount={scanHistory.length}
+        reportsCount={scanHistory.length}
+        isProUser={isProUser}
         onOpenLiveCamera={() => setIsLiveCameraOpen(true)}
         onResetScan={handleResetScan}
         isOpenMobile={isMobileSidebarOpen}
@@ -218,7 +231,7 @@ export default function App() {
         {/* Dashboard Main Workspace */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* TAB 1: AI LEAF SCANNER (Default workspace) */}
+          {/* TAB 1: AI LEAF SCANNER (1st Position) */}
           {activeTab === 'scanner' && (
             <div className="space-y-8">
               {!diagnosis ? (
@@ -264,7 +277,61 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: SCAN HISTORY JOURNAL (Moved to Left Side) */}
+          {/* TAB 2: LIVE CAMERA CAPTURE (2nd Position direct trigger / view) */}
+          {activeTab === 'camera' && (
+            <div className="bg-white rounded-3xl p-8 border border-emerald-100 text-center space-y-6 shadow-sm">
+              <div className="w-20 h-20 rounded-3xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto shadow-inner">
+                <Camera className="w-10 h-10" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="font-heading text-2xl font-bold text-slate-800">
+                  Live Camera Scanner Viewfinder
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  Stream high-definition video directly from your webcam or smartphone camera with real-time leaf alignment guides.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsLiveCameraOpen(true)}
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 active:scale-95 transition-all"
+              >
+                <Camera className="w-5 h-5" />
+                <span>Launch Camera Viewfinder</span>
+              </button>
+            </div>
+          )}
+
+          {/* TAB 3: TREATMENT & CURE LIBRARY (3rd Position) */}
+          {activeTab === 'treatments' && (
+            <TreatmentLibrary
+              onSelectSpecimen={(sample) => {
+                handleSampleSelect(sample);
+              }}
+              onAskDoctorAbout={handleAskDoctorAbout}
+            />
+          )}
+
+          {/* TAB 5: DOWNLOAD REPORTS (Replaces Health Analytics - 5th Position) */}
+          {activeTab === 'reports' && (
+            <ReportsView
+              history={scanHistory}
+              onSelectReport={handleSelectHistoryItem}
+              onNewScan={() => {
+                handleResetScan();
+                setActiveTab('scanner');
+              }}
+            />
+          )}
+
+          {/* TAB 6: SUBSCRIPTION PLANS (6th Position) */}
+          {activeTab === 'subscription' && (
+            <SubscriptionView
+              isProUser={isProUser}
+              onUpgradeToPro={() => setIsProUser(true)}
+            />
+          )}
+
+          {/* TAB 8: SCAN HISTORY (LAST Position) */}
           {activeTab === 'history' && (
             <HistoryView
               history={scanHistory}
@@ -275,21 +342,6 @@ export default function App() {
                 setActiveTab('scanner');
               }}
             />
-          )}
-
-          {/* TAB 3: TREATMENT & CURE LIBRARY */}
-          {activeTab === 'treatments' && (
-            <TreatmentLibrary
-              onSelectSpecimen={(sample) => {
-                handleSampleSelect(sample);
-              }}
-              onAskDoctorAbout={handleAskDoctorAbout}
-            />
-          )}
-
-          {/* TAB 4: CROP HEALTH ANALYTICS */}
-          {activeTab === 'analytics' && (
-            <AnalyticsView history={scanHistory} />
           )}
 
         </main>
@@ -321,12 +373,14 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
       />
 
-      {/* Ask AI Plant Doctor Assistant Modal */}
-      <PlantDoctorModal
-        isOpen={isDoctorOpen}
-        onClose={() => setIsDoctorOpen(false)}
-        diagnosis={doctorDiseaseContext || SAMPLE_DIAGNOSES[0]}
-      />
+      {/* Ask AI Plant Doctor Assistant Modal with Voice Input & Voice Output */}
+      {isDoctorOpen && (
+        <PlantDoctorModal
+          isOpen={isDoctorOpen}
+          onClose={() => setIsDoctorOpen(false)}
+          diagnosis={doctorDiseaseContext || SAMPLE_DIAGNOSES[0]}
+        />
+      )}
 
     </div>
   );
