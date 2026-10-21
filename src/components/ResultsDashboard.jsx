@@ -20,9 +20,22 @@ import {
   Thermometer,
   Wind,
   Info,
-  ChevronRight
+  ChevronRight,
+  Calculator,
+  ShoppingCart,
+  ExternalLink,
+  Zap,
+  Tag,
+  Star
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import DosageCalculator from './DosageCalculator';
+import AgroStoreModal from './AgroStoreModal';
+import {
+  getRecommendedProductsForDisease,
+  generateAffiliateUrl,
+  recordAffiliateClick
+} from '../services/affiliateService';
 
 export default function ResultsDashboard({
   diagnosis,
@@ -30,11 +43,14 @@ export default function ResultsDashboard({
   onReset,
   onAskDoctor
 }) {
-  const [activeTab, setActiveTab] = useState('organic');
+  const [activeTab, setActiveTab] = useState('organic'); // organic, chemical, prevention, calculator
   const [copied, setCopied] = useState(false);
   const [checkedActions, setCheckedActions] = useState({});
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
+  const [storeInitialProduct, setStoreInitialProduct] = useState(null);
 
   const isHealthy = diagnosis.severity === 'Healthy';
+  const matchedProducts = getRecommendedProductsForDisease(diagnosis.diseaseName);
 
   useEffect(() => {
     // If plant is healthy, trigger celebratory eco-friendly confetti!
@@ -47,7 +63,7 @@ export default function ResultsDashboard({
           colors: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#fbbf24']
         });
       } catch (e) {
-        // Safe fallback if confetti blocked
+        // Safe fallback
       }
     }
   }, [isHealthy]);
@@ -83,6 +99,22 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
     window.print();
   };
 
+  const handleOpenProductStore = (product) => {
+    setStoreInitialProduct(product);
+    setIsStoreOpen(true);
+  };
+
+  const handleDirectBuy = (product, e) => {
+    e.stopPropagation();
+    recordAffiliateClick(product, 'ResultsDashboardList');
+    const redirectUrl = generateAffiliateUrl({
+      productId: product.id,
+      partner: product.partner,
+      disease: diagnosis.diseaseName
+    });
+    window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Severity theme tokens
   const severityBadge = {
     Healthy: {
@@ -99,18 +131,11 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
       icon: AlertTriangle,
       gradient: 'from-amber-600 to-yellow-500'
     },
-    Severe: {
-      bg: 'bg-orange-100 text-orange-800 border-orange-300',
-      badgeBg: 'bg-orange-600 text-white',
-      ring: 'text-orange-500',
-      icon: Flame,
-      gradient: 'from-orange-600 to-rose-500'
-    },
     Critical: {
       bg: 'bg-rose-100 text-rose-800 border-rose-300',
       badgeBg: 'bg-rose-600 text-white',
       ring: 'text-rose-500',
-      icon: ShieldAlert,
+      icon: Flame,
       gradient: 'from-rose-600 to-red-500'
     }
   }[diagnosis.severity] || {
@@ -128,15 +153,32 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
       
       {/* Top Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white/70 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-emerald-100 shadow-xs">
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 flex-wrap">
           <span className="font-semibold text-emerald-800">Diagnostic ID:</span>
           <span className="font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md text-xs">{diagnosis.id}</span>
+          
+          {/* Edge AI Telemetry Badge if run offline */}
+          {diagnosis.isOfflineInference && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <Zap className="w-3.5 h-3.5 text-amber-600" />
+              <span>Edge AI Model ({diagnosis.inferenceLatencyMs}ms - Offline TFLite)</span>
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={handleCopyReport}
+            onClick={() => setIsStoreOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors"
+          >
+            <ShoppingCart className="w-4 h-4 text-emerald-600" />
+            <span className="hidden sm:inline">Certified Agro-Store</span>
+            <span className="sm:hidden">Store</span>
+          </button>
+
+          <button
+            onClick={handleCopyReport}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors"
           >
             {copied ? (
               <>
@@ -145,7 +187,7 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4 text-emerald-600" />
+                <Copy className="w-4 h-4 text-slate-500" />
                 <span>Copy Summary</span>
               </>
             )}
@@ -378,20 +420,30 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
                 Actionable Agronomy Plan
               </div>
               <h2 className="font-heading text-xl sm:text-2xl font-bold text-slate-800">
-                Bulleted Treatment & Care Recommendations
+                Bulleted Treatment, Remedies & Agro-Store Links
               </h2>
               <p className="text-xs sm:text-sm text-slate-500">
-                Click any recommendation to track it in your crop care checklist.
+                Click any recommendation to track it in your crop care checklist or order certified inputs.
               </p>
             </div>
 
-            <button
-              onClick={onAskDoctor}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-teal-600/20 active:scale-95 transition-all self-start sm:self-auto"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Ask Plant Doctor AI</span>
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                onClick={() => setIsStoreOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>Agro-Store Inputs</span>
+              </button>
+
+              <button
+                onClick={onAskDoctor}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-teal-600/20 active:scale-95 transition-all"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Ask Plant Doctor AI</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick 4-Step Triage if Disease Detected */}
@@ -422,11 +474,11 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
             </div>
           )}
 
-          {/* Interactive Navigation Pills */}
+          {/* Interactive Navigation Pills (Includes 4th Dosage Calculator Tab!) */}
           <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200">
             <button
               onClick={() => setActiveTab('organic')}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+              className={`flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === 'organic'
                   ? 'bg-white text-emerald-800 shadow-sm border border-emerald-100'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
@@ -441,7 +493,7 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
 
             <button
               onClick={() => setActiveTab('chemical')}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+              className={`flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === 'chemical'
                   ? 'bg-white text-teal-800 shadow-sm border border-teal-100'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
@@ -456,7 +508,7 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
 
             <button
               onClick={() => setActiveTab('prevention')}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+              className={`flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === 'prevention'
                   ? 'bg-white text-emerald-800 shadow-sm border border-emerald-100'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
@@ -468,16 +520,31 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
                 {diagnosis.prevention.length}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('calculator')}
+              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === 'calculator'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <Calculator className="w-4 h-4 text-amber-300" />
+              <span>Dosage Calculator</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold">
+                Live
+              </span>
+            </button>
           </div>
         </div>
 
         {/* Tab Content Display */}
         <div className="p-6 sm:p-8">
           
-          {/* Organic Tab */}
+          {/* Organic Tab with Direct Store Links */}
           {activeTab === 'organic' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="font-semibold text-emerald-800">
                   Eco-Friendly & Non-Toxic Applications
                 </span>
@@ -488,41 +555,74 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
                 {diagnosis.organicTreatments.map((treatment, idx) => {
                   const key = `organic-${idx}`;
                   const isDone = !!checkedActions[key];
+                  
+                  // Pick corresponding product recommendation if available
+                  const matchedProduct = matchedProducts[idx % matchedProducts.length];
+
                   return (
                     <div
                       key={key}
-                      onClick={() => toggleAction(key)}
-                      className={`flex items-start gap-3.5 p-4 rounded-2xl cursor-pointer border transition-all duration-200 ${
+                      className={`p-4 rounded-2xl border transition-all duration-200 ${
                         isDone
                           ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
                           : 'bg-white hover:bg-emerald-50/40 border-slate-200 hover:border-emerald-200 text-slate-700'
                       }`}
                     >
-                      <div
-                        className={`mt-0.5 w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
-                          isDone
-                            ? 'bg-emerald-600 border-emerald-600 text-white'
-                            : 'border-slate-300 bg-white'
-                        }`}
-                      >
-                        {isDone && <Check className="w-3.5 h-3.5" />}
+                      <div className="flex items-start gap-3.5 cursor-pointer" onClick={() => toggleAction(key)}>
+                        <div
+                          className={`mt-0.5 w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                            isDone
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isDone && <Check className="w-3.5 h-3.5" />}
+                        </div>
+
+                        <div className="flex-1">
+                          <p className={`text-xs sm:text-sm leading-relaxed font-medium ${isDone ? 'line-through text-emerald-800/70' : ''}`}>
+                            {treatment}
+                          </p>
+                        </div>
+
+                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-100/60 px-2 py-0.5 rounded-md self-center hidden sm:inline">
+                          Organic
+                        </span>
                       </div>
 
-                      <div className="flex-1">
-                        <p className={`text-xs sm:text-sm leading-relaxed font-medium ${isDone ? 'line-through text-emerald-800/70' : ''}`}>
-                          {treatment}
-                        </p>
-                      </div>
+                      {/* Direct Store Input Link Strip for this treatment */}
+                      {matchedProduct && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-50/60 p-3 rounded-xl">
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="font-semibold text-slate-800">{matchedProduct.title}</span>
+                            <span className="text-emerald-700 font-bold">₹{matchedProduct.priceInr}</span>
+                          </div>
 
-                      <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-100/60 px-2 py-0.5 rounded-md self-center hidden sm:inline">
-                        Organic
-                      </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => handleDirectBuy(matchedProduct, e)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-2xs"
+                            >
+                              <span>Buy on {matchedProduct.partner}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                            
+                            <button
+                              onClick={() => handleOpenProductStore(matchedProduct)}
+                              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold"
+                            >
+                              Details
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
 
-              <div className="mt-4 p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex items-start gap-3 text-xs text-emerald-900 leading-relaxed">
+              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex items-start gap-3 text-xs text-emerald-900 leading-relaxed">
                 <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Eco Tip:</strong> Organic and biological fungicides perform best when applied preventatively or at the earliest hint of symptoms, and should be reapplied after heavy rains.
@@ -531,10 +631,10 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
             </div>
           )}
 
-          {/* Chemical Tab */}
+          {/* Chemical Tab with Direct Store Links */}
           {activeTab === 'chemical' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="font-semibold text-teal-800">
                   Targeted Agronomic Active Ingredients
                 </span>
@@ -545,41 +645,72 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
                 {diagnosis.chemicalTreatments.map((treatment, idx) => {
                   const key = `chemical-${idx}`;
                   const isDone = !!checkedActions[key];
+                  const matchedProduct = matchedProducts[(idx + 1) % matchedProducts.length];
+
                   return (
                     <div
                       key={key}
-                      onClick={() => toggleAction(key)}
-                      className={`flex items-start gap-3.5 p-4 rounded-2xl cursor-pointer border transition-all duration-200 ${
+                      className={`p-4 rounded-2xl border transition-all duration-200 ${
                         isDone
                           ? 'bg-teal-50/90 border-teal-300 text-teal-950'
                           : 'bg-white hover:bg-teal-50/40 border-slate-200 hover:border-teal-200 text-slate-700'
                       }`}
                     >
-                      <div
-                        className={`mt-0.5 w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
-                          isDone
-                            ? 'bg-teal-600 border-teal-600 text-white'
-                            : 'border-slate-300 bg-white'
-                        }`}
-                      >
-                        {isDone && <Check className="w-3.5 h-3.5" />}
+                      <div className="flex items-start gap-3.5 cursor-pointer" onClick={() => toggleAction(key)}>
+                        <div
+                          className={`mt-0.5 w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                            isDone
+                              ? 'bg-teal-600 border-teal-600 text-white'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isDone && <Check className="w-3.5 h-3.5" />}
+                        </div>
+
+                        <div className="flex-1">
+                          <p className={`text-xs sm:text-sm leading-relaxed font-medium ${isDone ? 'line-through text-teal-800/70' : ''}`}>
+                            {treatment}
+                          </p>
+                        </div>
+
+                        <span className="text-[11px] font-semibold text-teal-700 bg-teal-100/60 px-2 py-0.5 rounded-md self-center hidden sm:inline">
+                          Targeted
+                        </span>
                       </div>
 
-                      <div className="flex-1">
-                        <p className={`text-xs sm:text-sm leading-relaxed font-medium ${isDone ? 'line-through text-teal-800/70' : ''}`}>
-                          {treatment}
-                        </p>
-                      </div>
+                      {/* Store Card Strip */}
+                      {matchedProduct && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-50/60 p-3 rounded-xl">
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-3.5 h-3.5 text-teal-600" />
+                            <span className="font-semibold text-slate-800">{matchedProduct.title}</span>
+                            <span className="text-teal-700 font-bold">₹{matchedProduct.priceInr}</span>
+                          </div>
 
-                      <span className="text-[11px] font-semibold text-teal-700 bg-teal-100/60 px-2 py-0.5 rounded-md self-center hidden sm:inline">
-                        Targeted
-                      </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => handleDirectBuy(matchedProduct, e)}
+                              className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1 shadow-2xs"
+                            >
+                              <span>Buy on {matchedProduct.partner}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                            
+                            <button
+                              onClick={() => handleOpenProductStore(matchedProduct)}
+                              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold"
+                            >
+                              Details
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
 
-              <div className="mt-4 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-start gap-3 text-xs text-amber-900 leading-relaxed">
+              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-start gap-3 text-xs text-amber-900 leading-relaxed">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Safety Notice:</strong> Always wear protective gloves and respirator when preparing synthetic sprays. Observe local pre-harvest intervals (PHI) before consuming edible produce.
@@ -638,9 +769,29 @@ ${diagnosis.prevention.map((p) => `• ${p}`).join('\n')}
             </div>
           )}
 
+          {/* Feature 4: Interactive Dosage & Remedy Calculator Tab */}
+          {activeTab === 'calculator' && (
+            <div className="animate-in fade-in duration-300">
+              <DosageCalculator
+                initialDiseaseName={diagnosis.diseaseName}
+                onOrderProduct={(remedy) => {
+                  setIsStoreOpen(true);
+                }}
+              />
+            </div>
+          )}
+
         </div>
 
       </div>
+
+      {/* Direct Agro-Store & Affiliate Modal */}
+      <AgroStoreModal
+        isOpen={isStoreOpen}
+        onClose={() => setIsStoreOpen(false)}
+        diagnosis={diagnosis}
+        initialProduct={storeInitialProduct}
+      />
 
       {/* Floating Bottom Quick Action on Mobile */}
       <div className="fixed bottom-4 left-4 right-4 sm:hidden z-30">

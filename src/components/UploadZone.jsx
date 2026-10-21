@@ -1,6 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, Camera, Sparkles, CheckCircle2, AlertCircle, ArrowRight, Zap, RefreshCw, ZoomIn } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Upload,
+  Image as ImageIcon,
+  Camera,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Zap,
+  RefreshCw,
+  ZoomIn,
+  Wifi,
+  WifiOff,
+  Cpu
+} from 'lucide-react';
 import { SAMPLE_DIAGNOSES } from '../data/plantData';
+import { checkIsOffline, EDGE_MODEL_METADATA } from '../services/edgeModelService';
 
 export default function UploadZone({
   selectedImage,
@@ -15,7 +30,29 @@ export default function UploadZone({
   const [isDragging, setIsDragging] = useState(false);
   const [dragError, setDragError] = useState('');
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isEdgeMode, setIsEdgeMode] = useState(false);
+  const [isDeviceOffline, setIsDeviceOffline] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Monitor network status
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      const offline = checkIsOffline();
+      setIsDeviceOffline(offline);
+      if (offline) {
+        setIsEdgeMode(true); // Automatically switch to edge AI on offline
+      }
+    };
+
+    updateOnlineStatus();
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -75,6 +112,50 @@ export default function UploadZone({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       
+      {/* Edge AI / Cloud Mode Switcher Banner */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-white/80 border border-emerald-100 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+            isEdgeMode ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+          }`}>
+            <Cpu className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800">
+                Inference Engine: {isEdgeMode ? 'Offline Edge AI (TFLite / ONNX)' : 'Cloud GPU Neural Cluster'}
+              </span>
+              {isDeviceOffline && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 flex items-center gap-1">
+                  <WifiOff className="w-3 h-3" /> Offline Detected
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500">
+              {isEdgeMode
+                ? 'Zero internet required • Sub-95ms WASM inference • 3.4MB INT8 edge weights'
+                : 'High-precision 65k sample cloud pathology database with real-time agronomic triage'}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle Button */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsEdgeMode(!isEdgeMode)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+              isEdgeMode
+                ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+            }`}
+          >
+            <Zap className={`w-3.5 h-3.5 ${isEdgeMode ? 'fill-slate-950' : 'text-amber-500'}`} />
+            <span>{isEdgeMode ? '⚡ Edge Mode Active' : 'Enable Edge Offline Mode'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Upload Box / Dropzone */}
       <div
         onDragOver={handleDragOver}
@@ -205,7 +286,9 @@ export default function UploadZone({
                     {fileName || 'Leaf Image Specimen'}
                   </h4>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                    AI will cross-examine chloroplast texture, discoloration rings, necrosis patterns, and margin venation against 65,000+ pathological samples.
+                    {isEdgeMode
+                      ? 'Local client-side Edge AI will process normalized 224x224 tensor pixels on your browser canvas with sub-95ms offline latency.'
+                      : 'AI will cross-examine chloroplast texture, discoloration rings, necrosis patterns, and margin venation against 65,000+ pathological samples.'}
                   </p>
                 </div>
 
@@ -213,12 +296,12 @@ export default function UploadZone({
                   {/* Start AI Diagnostic CTA */}
                   <button
                     type="button"
-                    onClick={onStartAnalysis}
+                    onClick={() => onStartAnalysis(isEdgeMode)}
                     disabled={isAnalyzing}
                     className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-base shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 active:scale-[0.98] transition-all disabled:opacity-50"
                   >
                     <Zap className="w-5 h-5 fill-current text-amber-300" />
-                    <span>Run AI Disease Analysis</span>
+                    <span>{isEdgeMode ? 'Run Edge AI Analysis (Offline)' : 'Run AI Disease Analysis'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -236,7 +319,7 @@ export default function UploadZone({
                 <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-2">
                   <span>Privacy secured</span>
                   <span>•</span>
-                  <span>Instant browser inference</span>
+                  <span>{isEdgeMode ? 'Sub-95ms Offline TFLite Engine' : 'Instant browser inference'}</span>
                 </div>
               </div>
 

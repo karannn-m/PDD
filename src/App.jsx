@@ -12,13 +12,18 @@ import SubscriptionView from './components/SubscriptionView';
 import PhotoGuideModal from './components/PhotoGuideModal';
 import PlantDoctorModal from './components/PlantDoctorModal';
 import EcoStatsBanner from './components/EcoStatsBanner';
+import DosageCalculator from './components/DosageCalculator';
+import OutbreakRadar from './components/OutbreakRadar';
+import AgroStoreModal from './components/AgroStoreModal';
 import Footer from './components/Footer';
 import { SAMPLE_DIAGNOSES, analyzeUploadedImage } from './data/plantData';
-import { Sparkles, Leaf, Camera, ShieldCheck, ArrowRight, Zap, RefreshCw } from 'lucide-react';
+import { runLocalEdgeInference, checkIsOffline } from './services/edgeModelService';
+import { captureScanCoordinates, checkAndDispatchOutbreakAlert } from './services/geospatialService';
+import { Sparkles } from 'lucide-react';
 
 export default function App() {
-  // Navigation State (Line-by-line options on left sidebar)
-  // 1: 'scanner', 2: 'camera', 3: 'treatments', 4: 'doctor', 5: 'reports', 6: 'subscription', 7: 'guide', 8: 'history'
+  // Navigation State
+  // 'scanner', 'camera', 'treatments', 'calculator', 'radar', 'doctor', 'store', 'reports', 'subscription', 'guide', 'history'
   const [activeTab, setActiveTab] = useState('scanner');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -32,14 +37,19 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [diagnosis, setDiagnosis] = useState(null);
   const [activeSample, setActiveSample] = useState(null);
+  const [useEdgeModel, setUseEdgeModel] = useState(false);
 
   // Live Camera Viewfinder State
   const [isLiveCameraOpen, setIsLiveCameraOpen] = useState(false);
 
-  // Modals
+  // Modals & Drawers
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDoctorOpen, setIsDoctorOpen] = useState(false);
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [doctorDiseaseContext, setDoctorDiseaseContext] = useState(SAMPLE_DIAGNOSES[0]);
+
+  // Outbreak notification banner
+  const [activeOutbreakNotice, setActiveOutbreakNotice] = useState(null);
 
   // Scan History & Reports Journal
   const [scanHistory, setScanHistory] = useState([
@@ -87,7 +97,7 @@ export default function App() {
     setDiagnosis(null);
     setActiveTab('scanner');
 
-    // Automatically initiate neural analysis on live snapshot!
+    // Automatically initiate neural analysis on live snapshot
     setIsAnalyzing(true);
   };
 
@@ -105,25 +115,42 @@ export default function App() {
   };
 
   // Trigger analysis for loaded preview
-  const handleStartAnalysis = () => {
+  const handleStartAnalysis = (isEdge = false) => {
     if (!previewUrl) return;
+    setUseEdgeModel(isEdge || checkIsOffline());
     setIsAnalyzing(true);
   };
 
   // Callback when scanning laser completes
-  const handleAnalysisComplete = () => {
+  const handleAnalysisComplete = async () => {
     setIsAnalyzing(false);
 
     let result;
     if (activeSample) {
-      result = activeSample;
+      result = { ...activeSample };
+    } else if (useEdgeModel || checkIsOffline()) {
+      // 1. Feature 1: Offline Edge AI Model
+      result = await runLocalEdgeInference(previewUrl, fileName);
     } else {
       result = analyzeUploadedImage(fileName);
       result.image = previewUrl;
     }
 
-    // Set unique report ID
-    result.id = `FS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Set unique report ID if not present
+    if (!result.id) {
+      result.id = `FS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    // 2. Feature 3: Capture Geospatial Coordinates with privacy fuzzing
+    const geo = await captureScanCoordinates();
+    if (geo.coords) {
+      result.geoCoordinates = geo.coords;
+      // Check district outbreak trigger
+      const alert = checkAndDispatchOutbreakAlert(geo.coords.district || 'Bathinda', result.diseaseName);
+      if (alert.alertTriggered) {
+        setActiveOutbreakNotice(alert);
+      }
+    }
 
     setDiagnosis(result);
     setDoctorDiseaseContext(result);
@@ -177,8 +204,14 @@ export default function App() {
         return 'Live Camera Scanner';
       case 'treatments':
         return 'Treatment & Agronomy Library';
+      case 'calculator':
+        return 'Smart Dosage & Dilution Calculator';
+      case 'radar':
+        return 'Geospatial Disease Outbreak Radar';
       case 'doctor':
         return 'AI Plant Doctor Consultation (Voice AI)';
+      case 'store':
+        return 'Certified Agro-Store & Certified Inputs';
       case 'reports':
         return 'Download & Print Leaf Diagnostic Reports';
       case 'subscription':
@@ -195,7 +228,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/40 text-slate-800 antialiased">
       
-      {/* 1. Left Sidebar Navigation (Ordered strictly as requested) */}
+      {/* 1. Left Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={(tab) => {
@@ -203,6 +236,8 @@ export default function App() {
             setIsGuideOpen(true);
           } else if (tab === 'doctor') {
             setIsDoctorOpen(true);
+          } else if (tab === 'store') {
+            setIsStoreOpen(true);
           } else {
             setActiveTab(tab);
           }
@@ -225,13 +260,39 @@ export default function App() {
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           onOpenLiveCamera={() => setIsLiveCameraOpen(true)}
           onResetScan={handleResetScan}
+          onOpenRadar={() => setActiveTab('radar')}
           hasActiveDiagnosis={!!diagnosis}
         />
+
+        {/* Proactive Geospatial Outbreak Warning Bar */}
+        {activeOutbreakNotice && (
+          <div className="bg-rose-600 text-white px-4 py-2 text-xs flex items-center justify-between shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <strong>{activeOutbreakNotice.title}:</strong>
+              <span className="hidden sm:inline">{activeOutbreakNotice.message}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveTab('radar')}
+                className="underline font-bold hover:text-rose-200"
+              >
+                View Radar Map
+              </button>
+              <button
+                onClick={() => setActiveOutbreakNotice(null)}
+                className="text-white/80 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Dashboard Main Workspace */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* TAB 1: AI LEAF SCANNER (1st Position) */}
+          {/* TAB 1: AI LEAF SCANNER */}
           {activeTab === 'scanner' && (
             <div className="space-y-8">
               {!diagnosis ? (
@@ -240,17 +301,17 @@ export default function App() {
                   <div className="max-w-3xl space-y-2">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
                       <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Live Machine-Vision Crop Pathology</span>
+                      <span>Live Machine-Vision Crop Pathology • Edge & Cloud Hybrid</span>
                     </div>
                     <h1 className="font-heading text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                       Detect Leaf Diseases & Receive Instant Cures
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
-                      Capture a live photo using your camera or upload a leaf image to pinpoint pathogens, check confidence ratings, and follow organic & targeted treatment checklists.
+                      Capture a live photo using your camera or upload a leaf image to pinpoint pathogens, check confidence ratings, calculate precision remedy dosages, and follow verified treatment protocols.
                     </p>
                   </div>
 
-                  {/* Drag-and-drop & Camera Upload Hub */}
+                  {/* Drag-and-drop & Camera Upload Hub (Supports Edge AI Mode) */}
                   <UploadZone
                     selectedImage={selectedFile}
                     previewUrl={previewUrl}
@@ -266,7 +327,7 @@ export default function App() {
                   <EcoStatsBanner />
                 </>
               ) : (
-                /* Dynamic Results Dashboard with Confidence & Treatment Recommendations */
+                /* Dynamic Results Dashboard with Confidence, Dosage Calculator & Treatment Links */
                 <ResultsDashboard
                   diagnosis={diagnosis}
                   previewUrl={previewUrl}
@@ -277,7 +338,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: LIVE CAMERA CAPTURE (2nd Position direct trigger / view) */}
+          {/* TAB 2: LIVE CAMERA CAPTURE */}
           {activeTab === 'camera' && (
             <div className="bg-white rounded-3xl p-8 border border-emerald-100 text-center space-y-6 shadow-sm">
               <div className="w-20 h-20 rounded-3xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto shadow-inner">
@@ -301,7 +362,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: TREATMENT & CURE LIBRARY (3rd Position) */}
+          {/* TAB 3: TREATMENT & CURE LIBRARY */}
           {activeTab === 'treatments' && (
             <TreatmentLibrary
               onSelectSpecimen={(sample) => {
@@ -311,7 +372,26 @@ export default function App() {
             />
           )}
 
-          {/* TAB 5: DOWNLOAD REPORTS (Replaces Health Analytics - 5th Position) */}
+          {/* FEATURE 4: SMART DOSAGE & REMEDY CALCULATOR (STANDALONE VIEW) */}
+          {activeTab === 'calculator' && (
+            <div className="space-y-6">
+              <DosageCalculator
+                initialDiseaseName={diagnosis?.diseaseName || 'Late Blight'}
+                onOrderProduct={() => {
+                  setIsStoreOpen(true);
+                }}
+              />
+            </div>
+          )}
+
+          {/* FEATURE 3: GEOSPATIAL DISEASE OUTBREAK RADAR */}
+          {activeTab === 'radar' && (
+            <div className="space-y-6">
+              <OutbreakRadar />
+            </div>
+          )}
+
+          {/* TAB: DOWNLOAD REPORTS */}
           {activeTab === 'reports' && (
             <ReportsView
               history={scanHistory}
@@ -323,7 +403,7 @@ export default function App() {
             />
           )}
 
-          {/* TAB 6: SUBSCRIPTION PLANS (6th Position) */}
+          {/* TAB: SUBSCRIPTION PLANS */}
           {activeTab === 'subscription' && (
             <SubscriptionView
               isProUser={isProUser}
@@ -331,7 +411,7 @@ export default function App() {
             />
           )}
 
-          {/* TAB 8: SCAN HISTORY (LAST Position) */}
+          {/* TAB: SCAN HISTORY */}
           {activeTab === 'history' && (
             <HistoryView
               history={scanHistory}
@@ -351,7 +431,7 @@ export default function App() {
 
       </div>
 
-      {/* Live Camera Viewfinder Overlay (WebRTC camera stream & snapshot) */}
+      {/* Live Camera Viewfinder Overlay */}
       {isLiveCameraOpen && (
         <LiveCamera
           onCapture={handleLiveCameraCapture}
@@ -373,11 +453,20 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
       />
 
-      {/* Ask AI Plant Doctor Assistant Modal with Voice Input & Voice Output */}
+      {/* Feature 2: Multilingual Voice AI Plant Doctor Assistant Modal */}
       {isDoctorOpen && (
         <PlantDoctorModal
           isOpen={isDoctorOpen}
           onClose={() => setIsDoctorOpen(false)}
+          diagnosis={doctorDiseaseContext || SAMPLE_DIAGNOSES[0]}
+        />
+      )}
+
+      {/* Feature 5: Direct Agro-Store & Affiliate Purchase Modal */}
+      {isStoreOpen && (
+        <AgroStoreModal
+          isOpen={isStoreOpen}
+          onClose={() => setIsStoreOpen(false)}
           diagnosis={doctorDiseaseContext || SAMPLE_DIAGNOSES[0]}
         />
       )}

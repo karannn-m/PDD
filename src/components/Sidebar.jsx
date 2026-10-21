@@ -14,7 +14,10 @@ import {
   ChevronRight,
   PlusCircle,
   Mic,
-  Printer
+  Printer,
+  Radio,
+  Calculator,
+  ShoppingCart
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -28,21 +31,12 @@ export default function Sidebar({
   isOpenMobile,
   onCloseMobile
 }) {
-  // Line-by-line options in the exact order requested:
-  // 1st: AI Leaf Scanner
-  // 2nd: Live Camera Capture
-  // 3rd: Treatment & Cure Library
-  // 4th: AI Plant Doctor (with Voice Assistant)
-  // 5th: Download Reports (Replaces Health Analytics)
-  // 6th: Subscription Plans
-  // 7th: Photography Guide
-  // LAST: Scan History
   const menuItems = [
     {
       id: 'scanner',
       label: 'AI Leaf Scanner',
       icon: ScanLine,
-      badge: '1st',
+      badge: 'Edge / Cloud',
       badgeColor: 'bg-emerald-500 text-white',
       desc: 'Upload or drop leaf photo'
     },
@@ -63,12 +57,36 @@ export default function Sidebar({
       desc: 'Organic & chemical solutions'
     },
     {
+      id: 'calculator',
+      label: 'Dosage & Dilution Calculator',
+      icon: Calculator,
+      badge: 'Precision',
+      badgeColor: 'bg-teal-100 text-teal-800 border border-teal-200',
+      desc: 'Acreage & sprayer mixing metrics'
+    },
+    {
+      id: 'radar',
+      label: 'Disease Outbreak Radar',
+      icon: Radio,
+      badge: 'GPS Alert',
+      badgeColor: 'bg-rose-500 text-white animate-pulse',
+      desc: 'District epidemic tracking & alerts'
+    },
+    {
       id: 'doctor',
-      label: 'AI Plant Doctor',
+      label: 'AI Plant Doctor (Voice)',
       icon: Bot,
-      badge: 'Voice AI',
+      badge: '7 Languages',
       badgeColor: 'bg-amber-100 text-amber-900 border border-amber-300',
-      desc: 'Voice & text agronomy assistant'
+      desc: 'Multilingual voice AI agronomist'
+    },
+    {
+      id: 'store',
+      label: 'Certified Agro-Store',
+      icon: ShoppingCart,
+      badge: 'Affiliate',
+      badgeColor: 'bg-emerald-100 text-emerald-800',
+      desc: 'Direct buy agrochemicals & bio'
     },
     {
       id: 'reports',
@@ -118,154 +136,124 @@ export default function Sidebar({
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-emerald-100/80">
-          <div
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => {
-              onSelectTab('scanner');
-              if (isOpenMobile) onCloseMobile();
-            }}
-          >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/25 group-hover:scale-105 transition-transform duration-300">
-              <Leaf className="w-5 h-5 -rotate-12 group-hover:rotate-0 transition-transform" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-heading text-xl font-bold bg-gradient-to-r from-emerald-950 via-emerald-800 to-teal-700 bg-clip-text text-transparent">
-                  FloraScan<span className="text-emerald-500">.ai</span>
-                </span>
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  v4.2
-                </span>
+        <div>
+          <div className="p-6 border-b border-emerald-100/80 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/30">
+                <Leaf className="w-5 h-5" />
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Plant Disease Detector & Care Hub
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick New Scan Action Button */}
-        <div className="px-4 pt-4">
-          <button
-            onClick={() => {
-              onResetScan();
-              onSelectTab('scanner');
-              if (isOpenMobile) onCloseMobile();
-            }}
-            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>New Leaf Scan</span>
-          </button>
-        </div>
-
-        {/* Navigation Menu (Line by Line Options Ordered Strictly) */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Dashboard Options
-          </div>
-
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'camera') {
-                    onOpenLiveCamera();
-                  } else {
-                    onSelectTab(item.id);
-                  }
-                  if (isOpenMobile) onCloseMobile();
-                }}
-                className={`w-full flex items-center justify-between p-2.5 sm:p-3 rounded-2xl text-left font-medium transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
-                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/70 border border-transparent hover:border-emerald-100'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold block truncate">
-                      {item.label}
-                    </span>
-                    <span
-                      className={`text-[10px] block truncate ${
-                        isActive ? 'text-emerald-100' : 'text-slate-400 group-hover:text-slate-500'
-                      }`}
-                    >
-                      {item.desc}
-                    </span>
-                  </div>
-                </div>
-
-                {item.badge && (
-                  <span
-                    className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                      isActive
-                        ? 'bg-white text-emerald-800'
-                        : item.badgeColor || 'bg-emerald-100 text-emerald-800'
-                    }`}
-                  >
-                    {item.badge}
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="font-heading text-lg font-extrabold tracking-tight text-slate-900">
+                    FloraScan<span className="text-emerald-600">.ai</span>
+                  </h1>
+                  <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider">
+                    v4.2
                   </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Bottom Status & Plan Badge */}
-        <div className="p-4 border-t border-emerald-100/80 bg-emerald-50/40 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-bold text-slate-700">
-                {isProUser ? 'Farm Pro License' : 'Free Agronomy Tier'}
-              </span>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Autonomous Plant Pathology
+                </p>
+              </div>
             </div>
 
+            {/* Quick Reset Scan Icon */}
             <button
               onClick={() => {
-                onSelectTab('subscription');
-                if (isOpenMobile) onCloseMobile();
+                onResetScan();
+                onCloseMobile();
               }}
-              className="text-[11px] font-extrabold text-emerald-700 hover:underline"
+              className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+              title="Start Clean Scan"
             >
-              {isProUser ? 'Active' : 'Upgrade'}
+              <PlusCircle className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-white border border-emerald-100 text-[11px] text-slate-500 space-y-1">
-            <div className="flex justify-between font-semibold">
-              <span>Voice AI Assistant</span>
-              <span className="text-emerald-700 font-bold flex items-center gap-1">
-                <Mic className="w-3 h-3" /> Ready
-              </span>
+          {/* Navigation Links */}
+          <nav className="p-3.5 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Core Diagnostic Modules
             </div>
-            <div className="flex justify-between">
-              <span>Report Printing</span>
-              <span className="text-slate-700 flex items-center gap-1">
-                <Printer className="w-3 h-3" /> Enabled
-              </span>
-            </div>
-          </div>
+
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    onSelectTab(item.id);
+                    onCloseMobile();
+                  }}
+                  className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all duration-200 text-left group ${
+                    isActive
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 font-bold'
+                      : 'text-slate-600 hover:bg-emerald-50/70 hover:text-emerald-950 font-medium'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : 'bg-emerald-50 text-emerald-700 group-hover:bg-white group-hover:text-emerald-800'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="text-xs sm:text-sm font-semibold truncate leading-tight">
+                        {item.label}
+                      </div>
+                      <div
+                        className={`text-[10px] truncate leading-tight mt-0.5 ${
+                          isActive ? 'text-emerald-100/90' : 'text-slate-400'
+                        }`}
+                      >
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+
+                  {item.badge && (
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ml-1.5 ${
+                        isActive ? 'bg-white text-emerald-900' : item.badgeColor
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
+        {/* Footer info & Account */}
+        <div className="p-4 border-t border-emerald-100/80 bg-slate-50/60">
+          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white border border-emerald-100/90 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                FS
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 block truncate">
+                  Dr. Rajesh Sharma
+                </span>
+                <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  {isProUser ? 'Pro Agronomist' : 'Kisan Free Plan'}
+                </span>
+              </div>
+            </div>
+
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </div>
+        </div>
       </aside>
     </>
   );
