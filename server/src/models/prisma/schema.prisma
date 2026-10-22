@@ -1,0 +1,219 @@
+// FloraScan.ai - PostgreSQL & PostGIS Prisma Schema
+// Provides high-performance spatial indexing, relational integrity, and scalability
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis()] // Enables PostGIS extension for spatial queries (ST_DWithin, ST_Point)
+}
+
+enum Role {
+  FARMER
+  AGRI_EXPERT
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum PathogenType {
+  FUNGAL
+  BACTERIAL
+  VIRAL
+  PEST
+  DEFICIENCY
+  HEALTHY
+}
+
+enum OutbreakRiskLevel {
+  LOW_WATCH
+  MODERATE_WATCH
+  HIGH_ALERT
+  CRITICAL_OUTBREAK
+}
+
+enum ScanStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// -------------------------------------------------------------
+// USER & FIELD MANAGEMENT
+// -------------------------------------------------------------
+model User {
+  id             String           @id @default(uuid())
+  email          String?          @unique
+  phone          String?          @unique
+  fullName       String
+  passwordHash   String?          // Null if authenticated solely via Firebase Phone/Google Auth
+  firebaseUid    String?          @unique
+  role           Role             @default(FARMER)
+  tier           SubscriptionTier @default(FREE)
+  preferredLang  String           @default("hi") // hi, en, mr, pa, te, ta, bn
+  cropFocus      String[]         @default([])   // e.g. ["Tomato", "Potato", "Wheat"]
+  fcmPushToken   String?          // Device token for geospatial disease outbreak push notifications
+  
+  fields         Field[]
+  scans          Scan[]
+  createdAlerts  OutbreakAlert[]  @relation("ExpertAlerts")
+  
+  dailyScanCount Int              @default(0)
+  lastScanReset  DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([role])
+  @@index([tier])
+  @@index([firebaseUid])
+}
+
+model Field {
+  id           String                 @id @default(uuid())
+  userId       String
+  fieldName    String                 // e.g. "North Ridge Plot"
+  cropType     String                 // e.g. "Solanum lycopersicum"
+  acreage      Float                  // e.g. 3.5 acres
+  soilType     String?                // e.g. "Black Cotton Soil"
+  latitude     Float
+  longitude    Float
+  // PostGIS spatial geometry for field boundary or centroid
+  location     Unsupported("geometry(Point, 4326)")? 
+
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scans        Scan[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([userId])
+}
+
+// -------------------------------------------------------------
+// SCAN & AI DIAGNOSTIC PIPELINE
+// -------------------------------------------------------------
+model Scan {
+  id                 String                             @id @default(uuid())
+  userId             String?
+  fieldId            String?
+  imageUrl           String
+  originalFilename   String?
+  cropIdentified     String                             // e.g. "Tomato"
+  diseaseId          String?
+  confidenceScore    Float                              // 0.00 to 1.00 (e.g. 0.942)
+  severityPercentage Float?                             // e.g. 38.5% leaf surface infected
+  status             ScanStatus                         @default(COMPLETED)
+  
+  // Geospatial logging with optional differential privacy jitter (~500m)
+  latitude           Float?
+  longitude          Float?
+  location           Unsupported("geometry(Point, 4326)")?
+  district           String?
+  state              String?
+  
+  // Hardware/Client Metadata
+  sourcePlatform     String?                            // "WEB", "PWA_OFFLINE", "ANDROID_APP"
+  modelEngine        String                             @default("ONNX_TFLITE_V2_QUANT")
+  inferenceTimeMs    Int?                               // e.g. 84ms
+
+  user               User?                              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  field              Field?                             @relation(fields: [fieldId], references: [id], onDelete: SetNull)
+  disease            Disease?                           @relation(fields: [diseaseId], references: [id])
+  
+  createdAt          DateTime                           @default(now())
+
+  @@index([cropIdentified])
+  @@index([diseaseId])
+  @@index([createdAt])
+  @@index([district, state])
+}
+
+// -------------------------------------------------------------
+// DISEASE & TREATMENT CATALOG
+// -------------------------------------------------------------
+model Disease {
+  id                  String          @id @default(uuid())
+  slug                String          @unique // e.g. "tomato-early-blight"
+  commonName          String          // e.g. "Early Blight"
+  scientificName      String          // e.g. "Alternaria solani"
+  pathogenType        PathogenType
+  hostCrops           String[]        // e.g. ["Tomato", "Potato", "Eggplant"]
+  symptomsSummary     String
+  environmentalTriggers String?       // e.g. "Warm humid conditions 24-29°C with intermittent rain"
+  
+  treatments          Treatment[]
+  scans               Scan[]
+  alerts              OutbreakAlert[]
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([pathogenType])
+  @@index([slug])
+}
+
+model Treatment {
+  id                  String       @id @default(uuid())
+  diseaseId           String
+  remedyType          String       // "ORGANIC" or "CHEMICAL"
+  brandName           String?      // e.g. "Mancozeb 75% WP" or "Cold-Pressed Neem Oil"
+  activeIngredient    String       // e.g. "Mancozeb" or "Azadirachtin 10000 PPM"
+  
+  // Dosage calculation parameters per Acre
+  recommendedDosageGramsOrMl Float // e.g. 600g per acre or 1000ml per acre
+  waterDilutionLiters Float        // e.g. 200 Liters of water per acre
+  dilutionRatioMlPerL Float        // e.g. 3.0 ml / gm per Liter of water
+  
+  stage               String       // "PREVENTIVE", "EARLY_CURATIVE", "CRITICAL_ERADICATION"
+  applicationIntervalDays Int      // e.g. 7 or 10 days
+  preHarvestIntervalDays Int       // PHI e.g. 7 days before harvest
+  safetyInstructions  String[]
+  affiliateStoreLinks Json?        // e.g. {"bighaat": "https://...", "agrostar": "https://..."}
+  
+  disease             Disease      @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([diseaseId, remedyType])
+}
+
+// -------------------------------------------------------------
+// GEOSPATIAL DISEASE TRACKING & OUTBREAK ALERTS
+// -------------------------------------------------------------
+model OutbreakAlert {
+  id                  String                             @id @default(uuid())
+  district            String                             // e.g. "Bathinda"
+  state               String                             // e.g. "Punjab"
+  diseaseId           String
+  latitude            Float
+  longitude           Float
+  centerPoint         Unsupported("geometry(Point, 4326)")
+  affectedRadiusKm    Float                              @default(15.0) // 15km perimeter
+  
+  activeCasesCount    Int                                // Number of positive scans detected
+  densityIndex        Float                              // Cases per 100 sq km
+  riskLevel           OutbreakRiskLevel                  @default(MODERATE_WATCH)
+  alertHeadline       String
+  advisoryText        String
+  
+  isBroadcasted       Boolean                            @default(false)
+  broadcastedAt       DateTime?
+  createdByExpertId   String?
+
+  disease             Disease                            @relation(fields: [diseaseId], references: [id])
+  createdByExpert     User?                              @relation("ExpertAlerts", fields: [createdByExpertId], references: [id])
+  
+  createdAt           DateTime                           @default(now())
+  updatedAt           DateTime                           @updatedAt
+
+  @@index([district, state])
+  @@index([riskLevel])
+  @@index([createdAt])
+}
