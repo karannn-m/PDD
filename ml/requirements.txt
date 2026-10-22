@@ -1,0 +1,15 @@
+# FloraScan.ai - PlantVillage ML Pipeline Requirements
+tensorflow>=2.15.0
+tensorflow-datasets>=4.9.3
+kagglehub>=0.2.0
+kaggle>=1.6.0
+numpy>=1.26.0
+pillow>=10.2.0
+scikit-learn>=1.4.0
+matplotlib>=3.8.0
+
+# Inference Microservice
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9
+requests>=2.31.0

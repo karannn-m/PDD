@@ -146,9 +146,14 @@ export const analyzeScan = async (req, res) => {
         symptoms: aiPrediction.symptoms
       },
       quickRemedies: {
-        chemical: 'Mancozeb 75% WP @ 2.5g / Liter of water (40g per 16L spray tank).',
-        organic: 'Cold-pressed Neem Oil 10,000 PPM (3ml / Liter of water) with bio-fungicide Trichoderma viride.'
+        chemical: aiPrediction.chemicalRemedy ? `${aiPrediction.chemicalRemedy.name} - ${aiPrediction.chemicalRemedy.dosagePerAcre}` : 'No chemical fungicide required for healthy foliage.',
+        organic: aiPrediction.organicRemedy ? `${aiPrediction.organicRemedy.name} - ${aiPrediction.organicRemedy.dosagePerAcre}` : 'Maintain organic soil health.'
       },
+      detailedTreatmentPlan: {
+        chemical: aiPrediction.chemicalRemedy,
+        organic: aiPrediction.organicRemedy
+      },
+      top3Candidates: aiPrediction.top3Candidates || [],
       standardDosagePlan: standardDosage,
       reportDownloadUrl: `/api/v1/scans/${scanLog._id}/report-pdf`,
       telemetry: {
