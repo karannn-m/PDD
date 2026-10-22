@@ -254,7 +254,7 @@ export default function ReportsView({ history, onSelectReport, onNewScan }) {
                 </div>
                 <div className="text-right text-xs text-slate-500">
                   <p className="font-mono font-bold text-slate-700">REPORT NO: {selectedReportForPrint.id}</p>
-                  <p>DATE: {new Date().toLocaleDateString()}</p>
+                  <p>DATE: {selectedReportForPrint.timestamp || 'Official Record'}</p>
                 </div>
               </div>
 

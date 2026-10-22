@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import UploadZone from './components/UploadZone';
@@ -15,6 +15,7 @@ import EcoStatsBanner from './components/EcoStatsBanner';
 import DosageCalculator from './components/DosageCalculator';
 import OutbreakRadar from './components/OutbreakRadar';
 import AgroStoreModal from './components/AgroStoreModal';
+import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import { SAMPLE_DIAGNOSES, analyzeUploadedImage } from './data/plantData';
 import { runLocalEdgeInference, checkIsOffline } from './services/edgeModelService';
@@ -22,6 +23,47 @@ import { captureScanCoordinates, checkAndDispatchOutbreakAlert } from './service
 import { Sparkles, Camera } from 'lucide-react';
 
 export default function App() {
+  // Theme State ('light' | 'dark')
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('florascan_theme') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
+    localStorage.setItem('florascan_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Two-Tier User & Farmer Authentication State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('florascan_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const handleLoginSuccess = (userProfile) => {
+    setCurrentUser(userProfile);
+    localStorage.setItem('florascan_auth_user', JSON.stringify(userProfile));
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('florascan_auth_user');
+  };
+
   // Navigation State
   // 'scanner', 'camera', 'treatments', 'calculator', 'radar', 'doctor', 'store', 'reports', 'subscription', 'guide', 'history'
   const [activeTab, setActiveTab] = useState('scanner');
@@ -226,7 +268,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/40 text-slate-800 antialiased">
+    <div className="min-h-screen flex bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 antialiased transition-colors duration-200">
       
       {/* 1. Left Sidebar Navigation */}
       <Sidebar
@@ -249,12 +291,16 @@ export default function App() {
         onResetScan={handleResetScan}
         isOpenMobile={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* 2. Main Content Dashboard Container */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         
-        {/* TopBar Header with Mobile Hamburger & Quick Camera */}
+        {/* TopBar Header with Theme Switcher & Two-Tier Login Button */}
         <TopBar
           activeTabTitle={getTabTitle()}
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
@@ -262,6 +308,10 @@ export default function App() {
           onResetScan={handleResetScan}
           onOpenRadar={() => setActiveTab('radar')}
           hasActiveDiagnosis={!!diagnosis}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          currentUser={currentUser}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
         />
 
         {/* Proactive Geospatial Outbreak Warning Bar */}
@@ -470,6 +520,16 @@ export default function App() {
           diagnosis={doctorDiseaseContext || SAMPLE_DIAGNOSES[0]}
         />
       )}
+
+      {/* Two-Tier Farmer & User Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        onLoginSuccess={handleLoginSuccess}
+        onLogout={handleLogout}
+        theme={theme}
+      />
 
     </div>
   );

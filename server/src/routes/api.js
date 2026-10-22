@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerUser, loginUser, updateProfile } from '../controllers/authController.js';
+import { registerUser, loginUser, updateProfile, sendOtp, verifyOtp } from '../controllers/authController.js';
 import { analyzeScan, getScanHistory } from '../controllers/scanController.js';
 import { getDiseaseRemedies, calculateSmartDosage } from '../controllers/treatmentController.js';
 import { getOutbreakClusters, triggerRegionalAlert } from '../controllers/radarController.js';
@@ -17,6 +17,8 @@ const router = Router();
 // ==========================================
 router.post('/auth/register', registerUser);
 router.post('/auth/login', loginUser);
+router.post('/auth/send-otp', sendOtp);
+router.post('/auth/verify-otp', verifyOtp);
 router.put('/auth/profile', authenticate, updateProfile);
 
 // ==========================================
