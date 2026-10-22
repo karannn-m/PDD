@@ -19,7 +19,7 @@ import Footer from './components/Footer';
 import { SAMPLE_DIAGNOSES, analyzeUploadedImage } from './data/plantData';
 import { runLocalEdgeInference, checkIsOffline } from './services/edgeModelService';
 import { captureScanCoordinates, checkAndDispatchOutbreakAlert } from './services/geospatialService';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Camera } from 'lucide-react';
 
 export default function App() {
   // Navigation State

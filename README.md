@@ -1,16 +1,18 @@
-# React + Vite
+# FloraScan.ai — Autonomous Plant Pathology & Treatment Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+FloraScan.ai is a full-stack, edge-first agricultural technology platform designed to detect crop leaf diseases from photographs, generate precision treatment regimens, calculate exact chemical/organic dilution dosages, provide real-time epidemiological outbreak monitoring via geospatial radar, and offer a multilingual voice AI agronomist in 7 regional Indian languages.
 
-Currently, two official plugins are available:
+## Features
+- **Offline Edge AI Model (TFLite / ONNX PTQ)**: Sub-95ms offline neural classification with zero internet connectivity.
+- **Multilingual Voice AI Assistant**: Bidirectional Speech-to-Text and Text-to-Speech in Hindi, Punjabi, Marathi, Telugu, Tamil, Bengali, and English.
+- **Geospatial Disease Outbreak Radar**: Privacy-preserving field GPS capture, density index calculations, and automated district push alerts.
+- **Smart Dosage & Remedy Dilution Calculator**: Dual Commercial Acreage and Home Garden dilution calculator with tank-by-tank mixing instructions.
+- **Direct Agro-Store & Affiliate Integration**: Verified product cards and tracked 1-click buy links for AgroStar, IFFCO Bazar, BigHaat, and Amazon Agri with rural PIN code delivery verification.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Scripts
+```bash
+npm run dev      # Start Vite development server
+npm run build    # Build production bundle
+npm run preview  # Preview production build
+npm run lint     # Run Oxlint
+```
