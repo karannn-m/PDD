@@ -33,7 +33,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'HEALTHY',
-    service: 'FloraScan.ai Backend API',
+    service: 'FloraScan Backend API',
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });

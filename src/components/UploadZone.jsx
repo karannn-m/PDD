@@ -190,13 +190,10 @@ export default function UploadZone({
               </span>
             </div>
 
-            <div className="max-w-md space-y-2">
+            <div className="max-w-md">
               <h3 className="font-heading text-xl sm:text-2xl font-bold text-slate-800">
                 {isDragging ? 'Drop your leaf photo here!' : 'Drop your leaf photo here'}
               </h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Take a close-up photo of the affected leaf in good lighting, or browse from your computer or phone gallery.
-              </p>
             </div>
 
             {/* Error banner if any */}

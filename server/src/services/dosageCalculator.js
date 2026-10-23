@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - Smart Dosage Calculation Engine
+ * FloraScan - Smart Dosage Calculation Engine
  * 
  * Computes calibrated organic and chemical spray mixtures based on:
  * - Land acreage or square footage

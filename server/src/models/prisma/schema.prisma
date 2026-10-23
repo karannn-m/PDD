@@ -1,4 +1,4 @@
-// FloraScan.ai - PostgreSQL & PostGIS Prisma Schema
+// FloraScan - PostgreSQL & PostGIS Prisma Schema
 // Provides high-performance spatial indexing, relational integrity, and scalability
 
 generator client {

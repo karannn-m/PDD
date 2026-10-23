@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Menu,
   Camera,
   Plus,
-  Radio,
   Sun,
   Moon,
   User,
@@ -11,7 +10,6 @@ import {
   Sprout,
   ShieldCheck
 } from 'lucide-react';
-import { checkIsOffline } from '../services/edgeModelService';
 
 export default function TopBar({
   activeTabTitle,
@@ -24,18 +22,6 @@ export default function TopBar({
   currentUser = null,
   onOpenAuthModal
 }) {
-  const [isOffline, setIsOffline] = useState(false);
-
-  useEffect(() => {
-    const handleStatus = () => setIsOffline(checkIsOffline());
-    handleStatus();
-    window.addEventListener('online', handleStatus);
-    window.addEventListener('offline', handleStatus);
-    return () => {
-      window.removeEventListener('online', handleStatus);
-      window.removeEventListener('offline', handleStatus);
-    };
-  }, []);
 
   return (
     <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/85 dark:bg-slate-900/90 border-b border-emerald-100/90 dark:border-slate-800 transition-colors duration-200">
@@ -59,30 +45,12 @@ export default function TopBar({
                   {activeTabTitle}
                 </h2>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
-                AI Leaf Pathology & Precision Agronomic Telemetry
-              </p>
             </div>
           </div>
 
           {/* Right: Theme Toggle, User Profile & Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Live Network / Edge Status Indicator */}
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-              {isOffline ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                  <span className="font-bold text-amber-700 dark:text-amber-400">Offline Edge TFLite</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-slate-700 dark:text-slate-200">Cloud GPU / Edge Hybrid</span>
-                </>
-              )}
-            </div>
-
             {/* LIGHT / DARK THEME TOGGLE BUTTON */}
             <button
               onClick={onToggleTheme}
@@ -95,18 +63,6 @@ export default function TopBar({
                 <Moon className="w-4 h-4 text-slate-700 animate-in spin-in-90 duration-300" />
               )}
             </button>
-
-            {/* Radar Shortcut Button */}
-            {onOpenRadar && (
-              <button
-                onClick={onOpenRadar}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-emerald-400 border border-slate-800 dark:border-slate-700 transition-all active:scale-95 shadow-2xs"
-                title="Open Geospatial Outbreak Radar"
-              >
-                <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                <span className="hidden md:inline">Outbreak Radar</span>
-              </button>
-            )}
 
             {/* Live Camera Quick Button */}
             <button

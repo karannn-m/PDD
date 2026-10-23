@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - Geospatial Disease Outbreak Radar Service
+ * FloraScan - Geospatial Disease Outbreak Radar Service
  * ========================================================
  * 1. Captures localized GPS coordinates during leaf scans with farmer consent.
  * 2. Applies differential privacy fuzzing (~500m jitter) to protect farmer field boundaries.

@@ -1,5 +1,5 @@
 """
-FloraScan.ai - PlantVillage Dataset Setup & Preprocessing Pipeline
+FloraScan - PlantVillage Dataset Setup & Preprocessing Pipeline
 ===================================================================
 1. Downloads the 38-class PlantVillage dataset via Kagglehub or TensorFlow Datasets (TFDS).
 2. Splits dataset into Training (80%), Validation (10%), and Testing (10%).

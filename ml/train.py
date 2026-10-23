@@ -1,5 +1,5 @@
 """
-FloraScan.ai - PlantVillage Transfer Learning Model Training
+FloraScan - PlantVillage Transfer Learning Model Training
 =============================================================
 Architecture: MobileNetV2 / EfficientNetB0 base + Custom Classification Head
 Callbacks: EarlyStopping, ModelCheckpoint (Best Validation Accuracy), ReduceLROnPlateau

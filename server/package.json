@@ -1,7 +1,7 @@
 {
   "name": "florascan-backend",
   "version": "1.0.0",
-  "description": "Production-grade Agri-Tech Backend API for FloraScan.ai Disease Detector and Care Hub",
+  "description": "Production-grade Agri-Tech Backend API for FloraScan Disease Detector and Care Hub",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
     "tflite",
     "voice-ai"
   ],
-  "author": "FloraScan.ai Engineering Team",
+  "author": "FloraScan Engineering Team",
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",

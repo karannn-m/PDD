@@ -1,6 +1,6 @@
-# FloraScan.ai — Autonomous Plant Pathology & Treatment Platform
+# FloraScan — Autonomous Plant Pathology & Treatment Platform
 
-FloraScan.ai is a full-stack, edge-first agricultural technology platform designed to detect crop leaf diseases from photographs, generate precision treatment regimens, calculate exact chemical/organic dilution dosages, provide real-time epidemiological outbreak monitoring via geospatial radar, and offer a multilingual voice AI agronomist in 7 regional Indian languages.
+FloraScan is a full-stack, edge-first agricultural technology platform designed to detect crop leaf diseases from photographs, generate precision treatment regimens, calculate exact chemical/organic dilution dosages, provide real-time epidemiological outbreak monitoring via geospatial radar, and offer a multilingual voice AI agronomist in 7 regional Indian languages.
 
 ## Features
 - **Offline Edge AI Model (TFLite / ONNX PTQ)**: Sub-95ms offline neural classification with zero internet connectivity.

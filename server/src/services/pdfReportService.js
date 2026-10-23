@@ -10,7 +10,7 @@ export const generateScanReportPdf = (scanData, res) => {
     margins: { top: 40, bottom: 40, left: 45, right: 45 },
     info: {
       Title: `FloraScan Clinical Report - ${scanData.id}`,
-      Author: 'FloraScan.ai Pathology Network',
+      Author: 'FloraScan Pathology Network',
       Subject: `Diagnostic Report for ${scanData.cropIdentified} - ${scanData.diseaseName}`
     }
   });
@@ -20,7 +20,7 @@ export const generateScanReportPdf = (scanData, res) => {
 
   // --- BRAND HEADER ---
   doc.rect(45, 40, 505, 55).fill('#14532d'); // Forest Emerald
-  doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold').text('FloraScan.ai', 60, 50);
+  doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold').text('FloraScan', 60, 50);
   doc.fontSize(10).font('Helvetica').text('Autonomous Agricultural Plant Pathology & Diagnostic Hub', 60, 75);
 
   doc.fillColor('#dcfce7').fontSize(9).font('Helvetica-Bold').text('CLINICAL ADVISORY REPORT', 400, 52, { align: 'right' });
@@ -99,7 +99,7 @@ export const generateScanReportPdf = (scanData, res) => {
   // --- FOOTER & DISCLAIMER ---
   doc.rect(45, 730, 505, 40).fill('#f1f5f9');
   doc.fillColor('#64748b').fontSize(7.5).font('Helvetica')
-    .text('NOTICE: This diagnostic report is generated using neural vision models validated against agricultural plant pathology datasets. Consult a licensed agronomist for commercial decisions. FloraScan.ai accepts no legal liability for crop outcomes.', 55, 736, { width: 485, align: 'center' });
+    .text('NOTICE: This diagnostic report is generated using neural vision models validated against agricultural plant pathology datasets. Consult a licensed agronomist for commercial decisions. FloraScan accepts no legal liability for crop outcomes.', 55, 736, { width: 485, align: 'center' });
   doc.fillColor('#94a3b8').fontSize(7)
     .text('Certified by FloraScan Precision Agri-Intelligence Systems • Verified Digital Signature Document', 55, 756, { width: 485, align: 'center' });
 

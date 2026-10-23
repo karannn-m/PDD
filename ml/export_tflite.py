@@ -1,5 +1,5 @@
 """
-FloraScan.ai - TFLite Edge Model Converter & Quantizer
+FloraScan - TFLite Edge Model Converter & Quantizer
 ======================================================
 Converts trained Keras/H5 model to:
 1. Standard Float32 TFLite (model.tflite)

@@ -1,4 +1,4 @@
-# FloraScan.ai - PlantVillage ML Pipeline Requirements
+# FloraScan - PlantVillage ML Pipeline Requirements
 tensorflow>=2.15.0
 tensorflow-datasets>=4.9.3
 kagglehub>=0.2.0

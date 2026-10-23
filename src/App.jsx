@@ -356,9 +356,6 @@ export default function App() {
                     <h1 className="font-heading text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                       Detect Leaf Diseases & Receive Instant Cures
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
-                      Capture a live photo using your camera or upload a leaf image to pinpoint pathogens, check confidence ratings, calculate precision remedy dosages, and follow verified treatment protocols.
-                    </p>
                   </div>
 
                   {/* Drag-and-drop & Camera Upload Hub (Supports Edge AI Mode) */}

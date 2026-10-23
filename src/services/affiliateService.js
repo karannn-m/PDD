@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - Direct Agro-Store & Affiliate Integration Service
+ * FloraScan - Direct Agro-Store & Affiliate Integration Service
  * ================================================================
  * Maps diagnostic pathology treatments directly to certified agri-inputs
  * from verified partners (AgroStar, IFFCO Kisan, BigHaat, Amazon Agri).
@@ -161,7 +161,7 @@ export function generateAffiliateUrl({
   disease = 'late_blight',
   farmerId = 'FS_FARMER'
 }) {
-  const baseUrl = 'https://florascan.ai/api/v1/affiliate/redirect';
+  const baseUrl = '/api/v1/affiliate/redirect';
   const params = new URLSearchParams({
     sku: productId,
     partner: partner.toLowerCase(),

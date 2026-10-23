@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - PlantVillage 38-Class Agronomic Remedies & Dosage Catalog
+ * FloraScan - PlantVillage 38-Class Agronomic Remedies & Dosage Catalog
  * Maps raw model output tags (e.g. "Tomato___Early_blight") to calibrated treatments,
  * active chemical molecules, biological remedies, and tank dilution specifications.
  */

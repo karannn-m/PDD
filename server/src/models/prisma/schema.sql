@@ -1,5 +1,5 @@
 -- =====================================================================
--- FloraScan.ai - PostgreSQL + PostGIS Native DDL Script
+-- FloraScan - PostgreSQL + PostGIS Native DDL Script
 -- Optimized for high-throughput spatial telemetry and 15km radar queries
 -- =====================================================================
 

@@ -5,7 +5,6 @@ import {
   Pill,
   Bot,
   FileText,
-  Crown,
   BookOpen,
   History,
   Leaf,
@@ -103,14 +102,6 @@ export default function Sidebar({
       desc: 'Save & print clinical reports'
     },
     {
-      id: 'subscription',
-      label: 'Subscription Plans',
-      icon: Crown,
-      badge: isProUser ? 'PRO ACTIVE' : 'UPGRADE',
-      badgeColor: isProUser ? 'bg-amber-400 text-slate-900 font-bold' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
-      desc: 'Pro farm & laboratory access'
-    },
-    {
       id: 'guide',
       label: 'Photography Guide',
       icon: BookOpen,
@@ -151,15 +142,12 @@ export default function Sidebar({
               <div>
                 <div className="flex items-center gap-1.5">
                   <h1 className="font-heading text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
-                    FloraScan<span className="text-emerald-600 dark:text-emerald-400">.ai</span>
+                    FloraScan
                   </h1>
                   <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
                     v4.5
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  Autonomous Plant Pathology
-                </p>
               </div>
             </div>
 

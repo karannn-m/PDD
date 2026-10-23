@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - Multilingual Voice AI Assistant Service
+ * FloraScan - Multilingual Voice AI Assistant Service
  * ========================================================
  * Provides bidirectional voice interaction (STT & TTS) tailored for farmers
  * in regional Indian languages & dialects (Hindi, Punjabi, Marathi, Telugu, Tamil, Bengali, English).

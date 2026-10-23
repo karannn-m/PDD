@@ -1,5 +1,5 @@
 """
-FloraScan.ai - Plant Disease AI Inference Microservice
+FloraScan - Plant Disease AI Inference Microservice
 ======================================================
 FastAPI service exposing POST /predict
 Supports both Keras (.keras / .h5) and TFLite (model.tflite) inference engines.
@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title="FloraScan.ai Plant Disease Classifier API",
+    title="FloraScan Plant Disease Classifier API",
     description="High-throughput neural diagnostic service trained on the PlantVillage 38-class dataset",
     version="1.0.0",
     lifespan=lifespan

@@ -163,7 +163,7 @@ export default function DosageCalculator({
   const estimatedCostInr = Math.round(totalConcentrate * selectedRemedy.costPerUnitInr);
 
   const handleCopyRecipe = () => {
-    const text = `FloraScan.ai - Smart Agronomy Dosage Recipe
+    const text = `FloraScan - Smart Agronomy Dosage Recipe
 --------------------------------------------------
 Remedy: ${selectedRemedy.name} (${selectedRemedy.type})
 Scope: ${mode === 'field' ? `${areaValue} ${areaUnit}` : `${potCount} ${potSize} pots`} of ${cropType}

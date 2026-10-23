@@ -10,7 +10,7 @@ const server = http.createServer(app);
 
 const startServer = async () => {
   try {
-    console.log('🚀 Initializing FloraScan.ai Agri-Tech Backend Service...');
+    console.log('🚀 Initializing FloraScan Agri-Tech Backend Service...');
 
     // Initialize Database Connections
     await connectMongoDB();
@@ -18,7 +18,7 @@ const startServer = async () => {
 
     server.listen(PORT, () => {
       console.log(`=======================================================`);
-      console.log(`🌿 FloraScan.ai API Server running on port ${PORT}`);
+      console.log(`🌿 FloraScan API Server running on port ${PORT}`);
       console.log(`📡 Health Check: http://localhost:${PORT}/health`);
       console.log(`🌿 Base API:     http://localhost:${PORT}/api/v1`);
       console.log(`=======================================================`);

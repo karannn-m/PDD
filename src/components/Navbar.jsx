@@ -15,7 +15,7 @@ export default function Navbar({ onReset, historyCount, onOpenHistory, onOpenGui
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-heading text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-700 bg-clip-text text-transparent">
-                  FloraScan<span className="text-emerald-500">.ai</span>
+                  FloraScan
                 </span>
                 <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   <Sparkles className="w-3 h-3 text-emerald-600" />

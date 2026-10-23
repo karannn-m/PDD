@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getPlantVillageRemedy } from '../data/plantVillageRemedies.js';
 
 /**
- * ML Inference Service for FloraScan.ai
+ * ML Inference Service for FloraScan
  * Connects directly to the PlantVillage 38-class Python FastAPI / TFLite microservice.
  * Integrates image preprocessing, neural disease classification, and agronomic care mapping.
  */

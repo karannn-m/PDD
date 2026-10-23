@@ -434,24 +434,16 @@ export default function AuthModal({
             )}
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                onLogout();
-                onClose();
-              }}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/70 transition-all active:scale-95"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all active:scale-95"
-            >
-              Continue to App
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              onLogout();
+              onClose();
+            }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/70 transition-all active:scale-95"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     );

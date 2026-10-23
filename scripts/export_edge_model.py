@@ -1,5 +1,5 @@
 """
-FloraScan.ai - Edge AI Model Conversion Pipeline
+FloraScan - Edge AI Model Conversion Pipeline
 ==================================================
 Converts PyTorch / TensorFlow plant pathology classification models to:
 1. ONNX (Open Neural Network Exchange) with dynamic batching and FP16/INT8 quantization.
@@ -176,7 +176,7 @@ def generate_model_metadata(output_path="florascan_edge_metadata.json"):
 
 if __name__ == "__main__":
     print("=================================================================")
-    print(" FloraScan.ai - Edge AI Conversion & Quantization Pipeline")
+    print(" FloraScan - Edge AI Conversion & Quantization Pipeline")
     print("=================================================================")
     generate_model_metadata()
     if HAS_TORCH:

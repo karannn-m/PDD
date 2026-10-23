@@ -1,5 +1,5 @@
 /**
- * FloraScan.ai - Offline Edge AI Service (TFLite / ONNX Runtime Web)
+ * FloraScan - Offline Edge AI Service (TFLite / ONNX Runtime Web)
  * =================================================================
  * Provides browser-native, offline-first leaf disease classification:
  * 1. Client-side canvas tensor pre-processing (224x224 bilinear scaling, RGB normalization).

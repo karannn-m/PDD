@@ -47,9 +47,6 @@ export default function EcoStatsBanner() {
             <h3 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Smarter Plant Health. Gentler on the Earth.
             </h3>
-            <p className="text-emerald-100/80 text-xs sm:text-sm leading-relaxed">
-              FloraScan AI pairs deep vision neural models with agroecological guidance to catch disease outbreaks early, minimize pesticide runoff, and safeguard pollinator ecosystems.
-            </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-emerald-700/50">
