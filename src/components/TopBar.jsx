@@ -4,11 +4,7 @@ import {
   Camera,
   Plus,
   Sun,
-  Moon,
-  User,
-  Tractor,
-  Sprout,
-  ShieldCheck
+  Moon
 } from 'lucide-react';
 
 export default function TopBar({
@@ -39,12 +35,9 @@ export default function TopBar({
             </button>
 
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">Dashboard /</span>
-                <h2 className="font-heading text-lg sm:text-xl font-bold text-slate-800 dark:text-white">
-                  {activeTabTitle}
-                </h2>
-              </div>
+              <h2 className="font-heading text-lg sm:text-xl font-bold text-slate-800 dark:text-white">
+                {activeTabTitle}
+              </h2>
             </div>
           </div>
 
@@ -84,45 +77,6 @@ export default function TopBar({
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">New Scan</span>
-            </button>
-
-            {/* TWO-TIER LOGIN / USER PROFILE BUTTON */}
-            <button
-              onClick={onOpenAuthModal}
-              className={`inline-flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl text-xs font-bold border transition-all active:scale-95 ${
-                currentUser
-                  ? currentUser.tier === 'farmer'
-                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-800/80 shadow-xs'
-                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80 shadow-xs'
-                  : 'bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white border-slate-700 shadow-sm'
-              }`}
-              title={currentUser ? `Logged in as ${currentUser.name}` : 'Sign In as Farmer or User'}
-            >
-              {currentUser ? (
-                <>
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                    currentUser.tier === 'farmer' ? 'bg-amber-600' : 'bg-emerald-600'
-                  }`}>
-                    {currentUser.avatarInitial || (currentUser.tier === 'farmer' ? '🌾' : '🌱')}
-                  </div>
-                  <div className="hidden md:block text-left leading-tight">
-                    <span className="block font-bold truncate max-w-[100px]">{currentUser.name.split(' ')[0]}</span>
-                    <span className="text-[10px] font-semibold opacity-75 flex items-center gap-0.5">
-                      {currentUser.tier === 'farmer' ? (
-                        <Tractor className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
-                      ) : (
-                        <Sprout className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-                      )}
-                      <span>{currentUser.tier === 'farmer' ? 'Farmer' : 'User'}</span>
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <User className="w-4 h-4 text-emerald-400" />
-                  <span className="hidden sm:inline">Sign In</span>
-                </>
-              )}
             </button>
 
           </div>

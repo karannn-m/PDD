@@ -5,7 +5,6 @@ import {
   Pill,
   Bot,
   FileText,
-  BookOpen,
   History,
   Leaf,
   ShieldCheck,
@@ -102,12 +101,6 @@ export default function Sidebar({
       desc: 'Save & print clinical reports'
     },
     {
-      id: 'guide',
-      label: 'Photography Guide',
-      icon: BookOpen,
-      desc: 'Tips for high accuracy'
-    },
-    {
       id: 'history',
       label: 'Scan History',
       icon: History,
@@ -166,8 +159,13 @@ export default function Sidebar({
 
           {/* Navigation Links */}
           <nav className="p-3.5 space-y-1 overflow-y-auto max-h-[calc(100vh-230px)]">
-            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Core Diagnostic Modules
+            <div className="px-3 pt-2 pb-2.5">
+              <h2 className="font-heading text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                Dashboard
+              </h2>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mt-0.5">
+                Core Diagnostic Modules
+              </div>
             </div>
 
             {menuItems.map((item) => {
@@ -230,38 +228,47 @@ export default function Sidebar({
         {/* Footer info & Account Card */}
         <div className="p-4 border-t border-emerald-100/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 space-y-2">
           
-          {/* USER PROFILE / LOGIN TRIGGER CARD */}
+          {/* USER PROFILE / LOGIN TRIGGER CARD (Bottom Left Corner) */}
           <button
             onClick={() => {
               onOpenAuthModal();
               if (onCloseMobile) onCloseMobile();
             }}
-            className="w-full text-left flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-emerald-100/90 dark:border-slate-700 shadow-2xs hover:border-emerald-300 dark:hover:border-slate-600 transition-all"
+            className={`w-full text-left flex items-center justify-between p-2.5 rounded-2xl border transition-all active:scale-[0.98] shadow-2xs ${
+              currentUser
+                ? currentUser.tier === 'farmer'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-800/80 hover:border-amber-400 shadow-amber-500/10'
+                  : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800/80 hover:border-emerald-400 shadow-emerald-500/10'
+                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-emerald-100/90 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-slate-600'
+            }`}
+            title={currentUser ? `Logged in as ${currentUser.name} (Click to manage account)` : 'Sign In as Farmer or User'}
           >
             {currentUser ? (
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className={`w-8 h-8 rounded-xl text-white font-bold flex items-center justify-center text-xs shadow-xs shrink-0 ${
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-9 h-9 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs shrink-0 ${
                   currentUser.tier === 'farmer' ? 'bg-amber-600' : 'bg-emerald-600'
                 }`}>
-                  {currentUser.avatarInitial || 'FS'}
+                  {currentUser.avatarInitial || (currentUser.tier === 'farmer' ? '🌾' : '🌱')}
                 </div>
                 <div className="min-w-0">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block truncate">
+                  <span className="text-sm font-extrabold block truncate leading-snug">
                     {currentUser.name}
                   </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className={`text-[11px] font-bold flex items-center gap-1 leading-none mt-0.5 ${
+                    currentUser.tier === 'farmer' ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
+                  }`}>
                     {currentUser.tier === 'farmer' ? (
-                      <Tractor className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                      <Tractor className="w-3.5 h-3.5" />
                     ) : (
-                      <Sprout className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <Sprout className="w-3.5 h-3.5" />
                     )}
-                    <span>{currentUser.badge}</span>
+                    <span>{currentUser.tier === 'farmer' ? 'Farmer' : (currentUser.badge || 'User')}</span>
                   </span>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-emerald-400 font-bold flex items-center justify-center text-xs shrink-0">
+                <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-slate-700 text-emerald-400 font-bold flex items-center justify-center text-xs shrink-0">
                   <User className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
